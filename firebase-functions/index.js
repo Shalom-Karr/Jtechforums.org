@@ -282,6 +282,14 @@ forumRouter.get('/forum/topic/:id', async (req, res) => {
   await proxyJson(res, `/t/${topicId}.json`, 120);
 });
 
+// Leaderboard data is publicly accessible on Discourse and does not require
+// API-key authentication.  We pass { auth: false } so that proxyJson skips
+// the Api-Key / Api-Username headers entirely.  This avoids a 500 error when
+// the Discourse API key is not configured and removes unnecessary credential
+// exposure.  The change is covered by Jest tests in index.test.js which
+// verify that (1) no auth headers are sent for this route, (2) the request
+// succeeds even without a DISCOURSE_API_KEY, and (3) other authenticated
+// routes still attach the key as expected.
 forumRouter.get('/forum/leaderboard/:id', async (req, res) => {
   const leaderboardId = Number(req.params.id);
   if (!leaderboardId) {
